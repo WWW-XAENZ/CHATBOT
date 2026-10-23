@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: allmar-whatsapp-bot
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
+    disk:
+      name: allmar-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_PATH
+        value: /var/data/allmar.json
+      - key: META_GRAPH_API_VERSION
+        value: v23.0
+      - key: META_ACCESS_TOKEN
+        sync: false
+      - key: META_PHONE_NUMBER_ID
+        sync: false
+      - key: META_VERIFY_TOKEN
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: ADMIN_REPORT_TOKEN
+        generateValue: true
+      - key: COORDINATOR_PHONE
+        value: "573122701373"
+      - key: LAST_MILE_PHONE
+        value: "573122701373"
+      - key: VEHICLE_MANAGER_PHONE
+        value: "573122724152"
+      - key: ORDER_MANAGER_PHONE
+        value: "573102146053"
