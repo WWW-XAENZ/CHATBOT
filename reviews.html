@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#2866ad">
+    <meta name="description" content="Comparte tu experiencia con Gestión y Atención de Clientes de SI3.">
+    <title>Cuéntanos tu experiencia | SI3</title>
+    <link rel="icon" type="image/png" href="./logo-si3.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    >
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+        color: #173f70;
+        background: #eef6ff;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        display: grid;
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        padding: 28px 16px;
+        place-items: center;
+        background:
+          radial-gradient(ellipse at 12% 9%, rgba(141, 185, 227, .32), transparent 25rem),
+          linear-gradient(145deg, #f8fbff, #eaf3fc);
+      }
+
+      .review-card {
+        width: min(100%, 560px);
+        overflow: hidden;
+        border: 1px solid #e1eaf4;
+        border-radius: 26px;
+        background: #fff;
+        box-shadow: 0 25px 70px rgba(16, 45, 82, .14);
+        animation: card-in .38s cubic-bezier(.2, .8, .2, 1) both;
+      }
+
+      .review-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 22px 26px;
+        background: linear-gradient(120deg, #2866ad, #102d52);
+        color: #fff;
+      }
+
+      .review-header img {
+        width: 52px;
+        height: 52px;
+        padding: 6px;
+        border-radius: 14px;
+        background: #fff;
+        object-fit: contain;
+      }
+
+      .review-header h1 {
+        margin: 0;
+        font-size: 15px;
+      }
+
+      .review-header p {
+        margin: 4px 0 0;
+        color: rgba(255, 255, 255, .76);
+        font-size: 11px;
+      }
+
+      .review-content {
+        padding: 34px 32px 30px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: #2866ad;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+
+      .review-content h2 {
+        margin: 0;
+        color: #102d52;
+        font-size: clamp(26px, 6vw, 34px);
+        letter-spacing: -.04em;
+      }
+
+      .intro {
+        margin: 12px 0 25px;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      fieldset {
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      legend,
+      .comment-label {
+        margin-bottom: 11px;
+        color: #293d54;
+        font-size: 13px;
+        font-weight: 750;
+      }
+
+      .rating-options {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 5px;
+        margin-bottom: 22px;
+      }
+
+      .rating-options input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+      }
+
+      .rating-options label {
+        color: #cbd5e1;
+        cursor: pointer;
+        font-size: 38px;
+        line-height: 1;
+        transition: color .14s ease, transform .14s ease;
+      }
+
+      .rating-options label:hover,
+      .rating-options label:hover ~ label,
+      .rating-options input:checked ~ label {
+        color: #f5ad35;
+      }
+
+      .rating-options label:hover {
+        transform: translateY(-2px);
+      }
+
+      .rating-options input:focus-visible + label {
+        outline: 3px solid rgba(52, 120, 197, .4);
+        outline-offset: 3px;
+        border-radius: 4px;
+      }
+
+      .comment-label {
+        display: block;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 118px;
+        resize: vertical;
+        padding: 13px 14px;
+        border: 1px solid #d5e0eb;
+        border-radius: 13px;
+        background: #fbfdff;
+        color: #173f70;
+        font: inherit;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      textarea:focus-visible {
+        outline: 3px solid rgba(52, 120, 197, .28);
+        border-color: #8db9e3;
+      }
+
+      .privacy-note {
+        margin: 11px 0 19px;
+        color: #78889a;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .submit-button,
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 11px 17px;
+        border: 0;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #3478c5, #20538f);
+        color: white;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 750;
+        text-decoration: none;
+        transition: transform .16s ease, box-shadow .16s ease;
+        box-shadow: 0 7px 15px rgba(32, 83, 143, .18);
+      }
+
+      .submit-button {
+        width: 100%;
+      }
+
+      .submit-button:hover,
+      .back-link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 19px rgba(32, 83, 143, .24);
+      }
+
+      .submit-button:disabled {
+        cursor: wait;
+        opacity: .65;
+      }
+
+      .status {
+        min-height: 20px;
+        margin: 12px 0 0;
+        color: #52677e;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .status.error {
+        color: #b42318;
+      }
+
+      .success {
+        padding: 12px 0 4px;
+        text-align: center;
+      }
+
+      .success-icon {
+        display: grid;
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 17px;
+        place-items: center;
+        border-radius: 50%;
+        background: #e8f7ef;
+        color: #188452;
+        font-size: 27px;
+      }
+
+      .success h2 {
+        font-size: 27px;
+      }
+
+      .success p {
+        margin: 12px 0 23px;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      @keyframes card-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(.99);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 12px;
+        }
+
+        .review-card {
+          border-radius: 21px;
+        }
+
+        .review-content {
+          padding: 27px 22px 24px;
+        }
+
+        .review-header {
+          padding: 18px 20px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: .01ms !important;
+          animation-duration: .01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="review-card">
+      <header class="review-header">
+        <img src="./logo-si3.png" alt="Logo SI3">
+        <div>
+          <h1>Gestión y Atención de Clientes</h1>
+          <p>Una operación SI3</p>
+        </div>
+      </header>
+      <section class="review-content">
+        <p class="eyebrow">Tu opinión nos ayuda</p>
+        <h2>¿Cómo fue tu experiencia?</h2>
+        <p class="intro">Gracias por permitirnos atenderte. Cuéntanos cómo te fue; tu reseña es anónima y nos ayuda a mejorar.</p>
+        <form id="review-form">
+          <fieldset>
+            <legend>Elige una calificación de 1 a 5 estrellas</legend>
+            <div class="rating-options">
+              <input id="rating-5" name="rating" type="radio" value="5" required>
+              <label for="rating-5" aria-label="5 estrellas">★</label>
+              <input id="rating-4" name="rating" type="radio" value="4">
+              <label for="rating-4" aria-label="4 estrellas">★</label>
+              <input id="rating-3" name="rating" type="radio" value="3">
+              <label for="rating-3" aria-label="3 estrellas">★</label>
+              <input id="rating-2" name="rating" type="radio" value="2">
+              <label for="rating-2" aria-label="2 estrellas">★</label>
+              <input id="rating-1" name="rating" type="radio" value="1">
+              <label for="rating-1" aria-label="1 estrella">★</label>
+            </div>
+          </fieldset>
+          <label class="comment-label" for="review-comment">Comentario (opcional)</label>
+          <textarea id="review-comment" name="comment" maxlength="1000" placeholder="¿Qué hicimos bien o qué podríamos mejorar?"></textarea>
+          <p class="privacy-note">No escribas información personal, números de pedido ni datos privados. No solicitamos tu nombre ni correo.</p>
+          <button class="submit-button" type="submit">Enviar reseña</button>
+          <p class="status" id="review-status" role="status" aria-live="polite"></p>
+        </form>
+        <div class="success" id="review-success" hidden>
+          <div class="success-icon" aria-hidden="true">✓</div>
+          <h2>¡Gracias por tu opinión!</h2>
+          <p>Tu reseña fue recibida. Agradecemos que nos ayudes a mejorar el servicio.</p>
+          <a class="back-link" href="./index.html">Volver al chatbot</a>
+        </div>
+      </section>
+    </main>
+    <script src="supabase-config.js"></script>
+    <script type="module" src="reviews.js"></script>
+  </body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "name": "allmar-whatsapp-bot",
+  "name": "gestion-atencion-clientes-chat",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -7,15 +7,6 @@
     "node": ">=20"
   },
   "scripts": {
-    "start": "node src/server.js",
     "test": "node --test"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.7",
-    "exceljs": "^4.4.0",
-    "express": "^4.21.2"
-  },
-  "overrides": {
-    "uuid": "^11.1.1"
   }
 }
