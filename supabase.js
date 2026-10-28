@@ -38,10 +38,14 @@ export function recordAnalytics(event) {
   });
 }
 
-export function signIn(email, password) {
+export function signIn(password) {
+  const adminEmail = config.adminEmail?.trim();
+  if (!adminEmail) {
+    throw new Error('Configura el correo fijo del administrador en supabase-config.js.');
+  }
   return request('/auth/v1/token?grant_type=password', {
     method: 'POST',
-    body: { email, password },
+    body: { email: adminEmail, password },
   });
 }
 

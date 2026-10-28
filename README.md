@@ -21,8 +21,9 @@ Es un asistente guiado que corre en el navegador, no una IA generativa: no puede
 ## Configurar Supabase
 
 1. En el proyecto existente de Supabase, abre **SQL Editor**, ejecuta el contenido de [`supabase-schema.sql`](./supabase-schema.sql) y confirma que se crearon las tablas `chat_analytics` y `reviews` con RLS habilitado.
-2. En **Authentication → Users**, crea una cuenta de correo/contraseña para cada persona autorizada a ver el informe. Desactiva el registro público de usuarios.
-3. En **SQL Editor**, agrega esos usuarios a la lista privada de administradores. Repite con cada ID/correo autorizado:
+2. Crea una cuenta dedicada de administrador en **Authentication → Users** con correo y contraseña. Desactiva el registro público de usuarios y usa una contraseña única, larga y privada.
+3. En [`supabase-config.js`](./supabase-config.js), configura `adminEmail` con el correo fijo de esa cuenta. El informe solo le pedirá la contraseña, pero Supabase Auth seguirá validando internamente correo y contraseña. El correo se incluye en el JavaScript publicado: no es secreto y la contraseña no debe guardarse en el código.
+4. En **SQL Editor**, agrega el usuario a la lista privada de administradores:
 
    ```sql
    insert into public.report_admins (user_id)
@@ -30,9 +31,9 @@ Es un asistente guiado que corre en el navegador, no una IA generativa: no puede
    on conflict do nothing;
    ```
 
-4. En **Project Settings → API**, copia el Project URL y la clave pública `anon`/publishable en [`supabase-config.js`](./supabase-config.js). Esta página pública nunca debe contener una clave `service_role` ni otra clave secreta.
-5. Publica el sitio por HTTPS y prueba una visita, el inicio de sesión del informe y el envío de una reseña. El informe se abre con cinco clics al logo, pero la seguridad depende de la autenticación y de las políticas RLS; los cinco clics solo ocultan el acceso.
-6. Comparte con el equipo el enlace publicado terminado en `/reviews.html` para que lo envíen manualmente por WhatsApp al finalizar la atención.
+5. En **Project Settings → API**, copia el Project URL y la clave pública `anon`/publishable en [`supabase-config.js`](./supabase-config.js). Esta página pública nunca debe contener una clave `service_role` ni otra clave secreta.
+6. Publica el sitio por HTTPS y prueba una visita, el inicio de sesión del informe y el envío de una reseña. El informe se abre con cinco clics al logo, pero la seguridad depende de la autenticación y de las políticas RLS; los cinco clics solo ocultan el acceso.
+7. Comparte con el equipo el enlace publicado terminado en `/reviews.html` para que lo envíen manualmente por WhatsApp al finalizar la atención.
 
 La tabla de métricas permite inserciones anónimas con columnas limitadas; solo usuarios autenticados incluidos en `report_admins` pueden consultar métricas y reseñas. Las reseñas son anónimas y no se muestran públicamente. Como el cliente puede enviar un comentario libre, se le pide explícitamente que no incluya datos personales ni información del pedido.
 

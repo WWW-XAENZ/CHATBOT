@@ -93,11 +93,13 @@ test('el informe centralizado requiere cinco clics y autenticación de administr
   assert.match(html, /Descargar CSV de visitas/);
   assert.match(html, /Copiar enlace de reseñas/);
   assert.match(script, /logoClickCount === 5/);
-  assert.match(script, /signIn\(reportEmail\.value\.trim\(\), reportPassword\.value\)/);
+  assert.match(script, /signIn\(reportPassword\.value\)/);
+  assert.doesNotMatch(html, /id="report-email"|Correo de administrador/);
   assert.match(script, /loadAnalytics\(reportAccessToken\)/);
   assert.match(script, /loadReviews\(reportAccessToken\)/);
   assert.match(script, /function groupAnalytics\(events\)/);
   assert.match(supabase, /\/auth\/v1\/token\?grant_type=password/);
+  assert.match(supabase, /const adminEmail = config\.adminEmail\?\.trim\(\)/);
   assert.match(supabase, /Bearer \$\{token \?\? publicKey\}/);
   assert.match(schema, /enable row level security/i);
   assert.match(schema, /Allow signed-in report readers/);

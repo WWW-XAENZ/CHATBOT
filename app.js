@@ -47,9 +47,7 @@ const reportDialog = document.querySelector('#report-dialog');
 const reportContent = document.querySelector('#report-content');
 const reportStatus = document.querySelector('#report-status');
 const reportExport = document.querySelector('#report-export');
-const reportLogin = document.querySelector('#report-login-form');
 const reportLoginForm = document.querySelector('#report-login-form');
-const reportEmail = document.querySelector('#report-email');
 const reportPassword = document.querySelector('#report-password');
 const reportLogout = document.querySelector('#report-logout');
 const reportCopyReviewLink = document.querySelector('#report-copy-review-link');
@@ -495,11 +493,11 @@ async function loadReport() {
     renderSessions(sessions);
     renderReviews(reviews);
     reportStatus.textContent = 'Informe centralizado. Las métricas son anónimas y no incluyen mensajes del chat.';
-    reportLogin.hidden = true;
+    reportLoginForm.hidden = true;
     reportDashboard.hidden = false;
   } catch (error) {
     reportStatus.textContent = error.message;
-    reportLogin.hidden = false;
+    reportLoginForm.hidden = false;
     reportDashboard.hidden = true;
   }
 }
@@ -536,10 +534,10 @@ async function exportReport() {
 function openAdminReport() {
   if (!isSupabaseConfigured) {
     reportStatus.textContent = 'Configura la URL y la clave pública de Supabase en supabase-config.js para activar el informe.';
-    reportLogin.hidden = true;
+    reportLoginForm.hidden = true;
     reportDashboard.hidden = true;
   } else {
-    reportLogin.hidden = false;
+    reportLoginForm.hidden = false;
     reportDashboard.hidden = true;
     reportStatus.textContent = 'Inicia sesión con una cuenta de administrador de Supabase.';
   }
@@ -553,7 +551,7 @@ reportLoginForm.addEventListener('submit', async (event) => {
   const submitButton = reportLoginForm.querySelector('button[type="submit"]');
   submitButton.disabled = true;
   try {
-    const session = await signIn(reportEmail.value.trim(), reportPassword.value);
+    const session = await signIn(reportPassword.value);
     reportAccessToken = session.access_token;
     reportPassword.value = '';
     await loadReport();
@@ -566,7 +564,7 @@ reportLoginForm.addEventListener('submit', async (event) => {
 
 reportLogout.addEventListener('click', () => {
   reportAccessToken = null;
-  reportLogin.hidden = false;
+  reportLoginForm.hidden = false;
   reportDashboard.hidden = true;
   reportContent.replaceChildren();
   reviewReportContent.replaceChildren();

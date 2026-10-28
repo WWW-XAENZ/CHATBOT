@@ -1082,12 +1082,10 @@
         <p class="report-status" id="report-status" role="status"></p>
         <form class="report-login" id="report-login-form">
           <h3>Acceso para administradores</h3>
-          <p class="report-login-copy">Inicia sesión con un usuario creado por el administrador en Supabase. El informe y las reseñas solo son visibles para cuentas autenticadas.</p>
+          <p class="report-login-copy">Ingresa la contraseña del administrador para consultar el informe y las reseñas.</p>
           <div id="report-login-fields">
-            <label for="report-email">Correo de administrador</label>
-            <input id="report-email" name="email" type="email" autocomplete="username" required>
             <label for="report-password">Contraseña</label>
-            <input id="report-password" name="password" type="password" autocomplete="current-password" required>
+            <input id="report-password" name="password" type="password" autocomplete="current-password" aria-label="Contraseña" required>
             <button class="report-login-submit" type="submit">Iniciar sesión</button>
           </div>
         </form>
