@@ -93,7 +93,9 @@ test('el informe centralizado requiere cinco clics y autenticación de administr
   assert.match(html, /Descargar CSV de visitas/);
   assert.match(html, /Copiar enlace de reseñas/);
   assert.match(script, /logoClickCount === 5/);
-  assert.match(script, /signIn\(reportPassword\.value\)/);
+  assert.match(script, /reportLoginForm\.elements\.namedItem\('password'\)/);
+  assert.match(script, /No se encontró el campo de contraseña/);
+  assert.match(script, /signIn\(passwordInput\.value\)/);
   assert.doesNotMatch(html, /id="report-email"|Correo de administrador/);
   assert.match(script, /loadAnalytics\(reportAccessToken\)/);
   assert.match(script, /loadReviews\(reportAccessToken\)/);

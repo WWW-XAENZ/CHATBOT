@@ -48,7 +48,6 @@ const reportContent = document.querySelector('#report-content');
 const reportStatus = document.querySelector('#report-status');
 const reportExport = document.querySelector('#report-export');
 const reportLoginForm = document.querySelector('#report-login-form');
-const reportPassword = document.querySelector('#report-password');
 const reportLogout = document.querySelector('#report-logout');
 const reportCopyReviewLink = document.querySelector('#report-copy-review-link');
 const reportDashboard = document.querySelector('#report-dashboard');
@@ -549,11 +548,16 @@ reportLoginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   reportStatus.textContent = 'Validando acceso…';
   const submitButton = reportLoginForm.querySelector('button[type="submit"]');
+  const passwordInput = reportLoginForm.elements.namedItem('password');
+  if (!(passwordInput instanceof HTMLInputElement)) {
+    reportStatus.textContent = 'No se encontró el campo de contraseña. Recarga la página e inténtalo de nuevo.';
+    return;
+  }
   submitButton.disabled = true;
   try {
-    const session = await signIn(reportPassword.value);
+    const session = await signIn(passwordInput.value);
     reportAccessToken = session.access_token;
-    reportPassword.value = '';
+    passwordInput.value = '';
     await loadReport();
   } catch (error) {
     reportStatus.textContent = `No se pudo iniciar sesión: ${error.message}`;
