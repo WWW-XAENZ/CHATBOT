@@ -611,6 +611,23 @@
         line-height: 1.5;
       }
 
+      .report-collection-status {
+        margin: 0 0 16px;
+        padding: 11px 13px;
+        border: 1px solid #ccebd8;
+        border-radius: 11px;
+        background: #f0faf4;
+        color: #17653e;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .report-collection-status.error {
+        border-color: #f1c7c4;
+        background: #fff5f4;
+        color: #a52c25;
+      }
+
       .report-login {
         max-width: 430px;
         margin: 0 auto;
@@ -703,7 +720,7 @@
 
       .report-summary {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 12px;
         margin-bottom: 20px;
       }
@@ -1094,6 +1111,7 @@
             <button class="report-copy-link" id="report-copy-review-link" type="button">Copiar enlace de reseñas</button>
             <button class="report-logout" id="report-logout" type="button">Cerrar sesión</button>
           </div>
+          <p class="report-collection-status" id="analytics-health" role="status"></p>
           <div id="report-content"></div>
           <section class="review-report">
             <h3>Reseñas de clientes</h3>

@@ -4,8 +4,13 @@ create table if not exists public.chat_analytics (
   event_type text not null check (event_type in ('visit_start', 'visit_end', 'assistant_reply', 'whatsapp_open')),
   occurred_at timestamptz not null default now(),
   wait_ms integer check (wait_ms is null or wait_ms >= 0),
-  duration_ms bigint check (duration_ms is null or duration_ms >= 0)
+  duration_ms bigint check (duration_ms is null or duration_ms >= 0),
+  device_type text not null default 'unknown' check (device_type in ('mobile', 'tablet', 'desktop', 'unknown'))
 );
+
+alter table public.chat_analytics
+  add column if not exists device_type text not null default 'unknown'
+  check (device_type in ('mobile', 'tablet', 'desktop', 'unknown'));
 
 create index if not exists chat_analytics_session_id_idx on public.chat_analytics (session_id);
 create index if not exists chat_analytics_occurred_at_idx on public.chat_analytics (occurred_at desc);
@@ -26,7 +31,7 @@ create policy "Admins can read their own report access"
 
 alter table public.chat_analytics enable row level security;
 revoke all on public.chat_analytics from anon, authenticated;
-grant insert (session_id, event_type, wait_ms, duration_ms) on public.chat_analytics to anon, authenticated;
+grant insert (session_id, event_type, wait_ms, duration_ms, device_type) on public.chat_analytics to anon, authenticated;
 grant select on public.chat_analytics to authenticated;
 
 drop policy if exists "Allow anonymous metric inserts" on public.chat_analytics;
@@ -36,6 +41,7 @@ create policy "Allow anonymous metric inserts"
     event_type in ('visit_start', 'visit_end', 'assistant_reply', 'whatsapp_open')
     and (wait_ms is null or wait_ms >= 0)
     and (duration_ms is null or duration_ms >= 0)
+    and device_type in ('mobile', 'tablet', 'desktop', 'unknown')
   );
 
 drop policy if exists "Allow signed-in report readers" on public.chat_analytics;

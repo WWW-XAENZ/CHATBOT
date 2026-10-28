@@ -1,4 +1,4 @@
-import { isSupabaseConfigured, loadAnalytics, loadReviews, recordAnalytics, signIn } from './supabase.js';
+import { isSupabaseConfigured, loadAnalytics, loadReviews, recordAnalyticsWithFallback, signIn } from './supabase.js';
 
 const contacts = {
   vehicle: {
@@ -53,12 +53,14 @@ const reportCopyReviewLink = document.querySelector('#report-copy-review-link');
 const reportDashboard = document.querySelector('#report-dashboard');
 const reviewReportContent = document.querySelector('#review-report-content');
 const logoTrigger = document.querySelector('#logo-trigger');
+const analyticsHealth = document.querySelector('#analytics-health');
 let selectedContact = null;
 let isReplying = false;
 let pendingReplyStartedAt = null;
 let reportAccessToken = null;
 let logoClickCount = 0;
 let logoClickTimer = null;
+let analyticsLastError = null;
 const visitStartedAt = Date.now();
 const sessionId = globalThis.crypto?.randomUUID
   ? globalThis.crypto.randomUUID()
@@ -69,14 +71,27 @@ const sessionId = globalThis.crypto?.randomUUID
 
 function recordVisitEvent(eventType, details = {}) {
   if (!isSupabaseConfigured) return;
-  recordAnalytics({
+  recordAnalyticsWithFallback({
     session_id: sessionId,
     event_type: eventType,
     ...details,
   }).catch((error) => {
+    analyticsLastError = `${eventType}: ${error.message}`;
     console.error('No se pudo registrar la métrica anónima en Supabase.', error);
+    if (analyticsHealth) {
+      analyticsHealth.textContent = `No se guardó ${eventType}: ${error.message}`;
+      analyticsHealth.classList.add('error');
+    }
     if (reportDialog.open) showReportError(error);
   });
+}
+
+function getDeviceType() {
+  const userAgent = navigator.userAgent;
+  if (/iPad|Tablet|PlayBook|Silk|Android(?!.*Mobile)/i.test(userAgent)) return 'tablet';
+  if (/Android|iPhone|iPod|Mobile/i.test(userAgent)) return 'mobile';
+  if (userAgent) return 'desktop';
+  return 'unknown';
 }
 
 function showReportError(error) {
@@ -389,6 +404,7 @@ function groupAnalytics(events) {
         id: event.session_id,
         enteredAt: null,
         durationMs: null,
+        deviceType: 'unknown',
         assistantWaits: [],
         whatsappWaits: [],
       };
@@ -396,6 +412,7 @@ function groupAnalytics(events) {
     }
 
     if (event.event_type === 'visit_start') session.enteredAt = event.occurred_at;
+    if (event.event_type === 'visit_start') session.deviceType = event.device_type ?? 'unknown';
     if (event.event_type === 'visit_end') session.durationMs = event.duration_ms;
     if (event.event_type === 'assistant_reply' && Number.isFinite(event.wait_ms)) session.assistantWaits.push(event.wait_ms);
     if (event.event_type === 'whatsapp_open' && Number.isFinite(event.wait_ms)) session.whatsappWaits.push(event.wait_ms);
@@ -407,10 +424,15 @@ function renderSessions(sessions) {
   reportContent.replaceChildren();
   const assistantWaits = sessions.flatMap((session) => session.assistantWaits);
   const whatsappWaits = sessions.flatMap((session) => session.whatsappWaits);
+  const devices = new Set(sessions.map((session) => session.deviceType));
+  const deviceSummary = devices.size
+    ? [...devices].map((device) => ({ mobile: 'Móvil', tablet: 'Tableta', desktop: 'Computador', unknown: 'No disponible' }[device] ?? 'No disponible')).join(', ')
+    : 'Sin datos';
   const summary = document.createElement('div');
   summary.className = 'report-summary';
   const cards = [
     ['Visitas registradas', String(sessions.length)],
+    ['Dispositivos', deviceSummary],
     ['Espera media del asistente', assistantWaits.length ? `${average(assistantWaits)} ms` : 'Sin datos'],
     ['Espera media para WhatsApp', whatsappWaits.length ? formatDuration(average(whatsappWaits)) : 'Sin datos'],
   ];
@@ -430,7 +452,7 @@ function renderSessions(sessions) {
   table.className = 'report-table';
   const head = document.createElement('thead');
   const headerRow = document.createElement('tr');
-  for (const label of ['Visita anónima', 'Fecha y hora', 'Tiempo en página', 'Espera del asistente', 'Espera de WhatsApp']) {
+  for (const label of ['Visita anónima', 'Dispositivo', 'Fecha y hora', 'Tiempo en página', 'Espera del asistente', 'Espera de WhatsApp']) {
     createReportCell(headerRow, label, 'th');
   }
   head.append(headerRow);
@@ -441,6 +463,7 @@ function renderSessions(sessions) {
     const assistantWait = average(session.assistantWaits);
     const whatsappWait = average(session.whatsappWaits);
     createReportCell(row, session.id.slice(-6));
+    createReportCell(row, { mobile: 'Móvil', tablet: 'Tableta', desktop: 'Computador', unknown: 'No disponible' }[session.deviceType] ?? 'No disponible');
     createReportCell(row, !enteredAt || Number.isNaN(enteredAt.getTime()) ? 'Fecha no disponible' : new Intl.DateTimeFormat('es-CO', { dateStyle: 'short', timeStyle: 'short' }).format(enteredAt));
     createReportCell(row, session.durationMs === null ? 'En curso' : formatDuration(session.durationMs));
     createReportCell(row, assistantWait === null ? '—' : `${assistantWait} ms`);
@@ -452,7 +475,17 @@ function renderSessions(sessions) {
   tableWrap.className = 'report-table-wrap';
   tableWrap.append(table);
   reportContent.append(tableWrap);
+  if (sessions.length === 0) {
+    const emptyState = document.createElement('p');
+    emptyState.className = 'report-status';
+    emptyState.textContent = 'Todavía no hay visitas guardadas. Si acabas de ejecutar el SQL, publica de nuevo el sitio y abre el chatbot desde su dirección HTTPS para registrar nuevas visitas.';
+    reportContent.append(emptyState);
+  }
   reportExport.disabled = sessions.length === 0;
+  analyticsHealth.classList.toggle('error', Boolean(analyticsLastError));
+  analyticsHealth.textContent = analyticsLastError
+    ? `Hay eventos que no se pudieron guardar (${analyticsLastError}). Revisa las columnas y políticas de Supabase.`
+    : 'Registro activo: visitas, dispositivo y tiempos se guardan en Supabase.';
 }
 
 function renderReviews(reviews) {
@@ -484,14 +517,24 @@ async function loadReport() {
   reportStatus.textContent = 'Cargando datos de Supabase…';
   reportExport.disabled = true;
   try {
-    const [events, reviews] = await Promise.all([
+    const [eventsResult, reviewsResult] = await Promise.allSettled([
       loadAnalytics(reportAccessToken),
       loadReviews(reportAccessToken),
     ]);
-    const sessions = groupAnalytics(events);
-    renderSessions(sessions);
-    renderReviews(reviews);
-    reportStatus.textContent = 'Informe centralizado. Las métricas son anónimas y no incluyen mensajes del chat.';
+    const errors = [];
+    if (eventsResult.status === 'fulfilled') {
+      renderSessions(groupAnalytics(eventsResult.value));
+    } else {
+      errors.push(`Métricas: ${eventsResult.reason.message}`);
+    }
+    if (reviewsResult.status === 'fulfilled') {
+      renderReviews(reviewsResult.value);
+    } else {
+      errors.push(`Reseñas: ${reviewsResult.reason.message}`);
+    }
+    reportStatus.textContent = errors.length
+      ? `Carga parcial: ${errors.join(' | ')}`
+      : 'Informe centralizado. Las métricas son anónimas y no incluyen mensajes del chat.';
     reportLoginForm.hidden = true;
     reportDashboard.hidden = false;
   } catch (error) {
@@ -506,9 +549,10 @@ async function exportReport() {
   try {
     const sessions = groupAnalytics(await loadAnalytics(reportAccessToken));
     const rows = [
-      ['ID anónimo', 'Fecha de entrada', 'Tiempo en página (ms)', 'Espera media del asistente (ms)', 'Espera media WhatsApp (ms)'],
+      ['ID anónimo', 'Dispositivo', 'Fecha de entrada', 'Tiempo en página (ms)', 'Espera media del asistente (ms)', 'Espera media WhatsApp (ms)'],
       ...sessions.map((session) => [
         session.id,
+        session.deviceType,
         session.enteredAt ?? '',
         session.durationMs ?? '',
         average(session.assistantWaits) ?? '',
@@ -600,7 +644,11 @@ logoTrigger.addEventListener('click', () => {
 window.addEventListener('pagehide', () => {
   recordVisitEvent('visit_end', { duration_ms: Math.max(0, Date.now() - visitStartedAt) });
 });
-recordVisitEvent('visit_start');
+if (!isSupabaseConfigured) {
+  analyticsHealth.textContent = 'Supabase no está configurado: no se pueden guardar las visitas.';
+  analyticsHealth.classList.add('error');
+}
+recordVisitEvent('visit_start', { device_type: getDeviceType() });
 
 form.addEventListener('submit', (event) => {
   event.preventDefault();

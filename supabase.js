@@ -11,8 +11,8 @@ async function request(path, { method = 'GET', body, token, keepalive = false } 
 
   const headers = {
     apikey: publicKey,
-    Authorization: `Bearer ${token ?? publicKey}`,
   };
+  if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
   const response = await fetch(`${baseUrl}${path}`, {
@@ -38,6 +38,17 @@ export function recordAnalytics(event) {
   });
 }
 
+export async function recordAnalyticsWithFallback(event) {
+  try {
+    return await recordAnalytics(event);
+  } catch (error) {
+    if (!event.device_type || !/device_type|column/i.test(error.message)) throw error;
+    const compatibleEvent = { ...event };
+    delete compatibleEvent.device_type;
+    return recordAnalytics(compatibleEvent);
+  }
+}
+
 export function signIn(password) {
   const adminEmail = config.adminEmail?.trim();
   if (!adminEmail) {
@@ -51,11 +62,16 @@ export function signIn(password) {
 
 export function loadAnalytics(accessToken) {
   const query = new URLSearchParams({
-    select: 'session_id,event_type,occurred_at,wait_ms,duration_ms',
+    select: 'session_id,event_type,occurred_at,wait_ms,duration_ms,device_type',
     order: 'occurred_at.desc',
     limit: '5000',
   });
-  return request(`/rest/v1/chat_analytics?${query}`, { token: accessToken });
+  return request(`/rest/v1/chat_analytics?${query}`, { token: accessToken }).catch(async (error) => {
+    if (!/device_type|column/i.test(error.message)) throw error;
+    query.set('select', 'session_id,event_type,occurred_at,wait_ms,duration_ms');
+    const events = await request(`/rest/v1/chat_analytics?${query}`, { token: accessToken });
+    return events.map((event) => ({ ...event, device_type: 'unknown' }));
+  });
 }
 
 export function recordReview(review) {

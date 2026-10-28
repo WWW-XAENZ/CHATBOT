@@ -20,7 +20,7 @@ Es un asistente guiado que corre en el navegador, no una IA generativa: no puede
 
 ## Configurar Supabase
 
-1. En el proyecto existente de Supabase, abre **SQL Editor**, ejecuta el contenido de [`supabase-schema.sql`](./supabase-schema.sql) y confirma que se crearon las tablas `chat_analytics` y `reviews` con RLS habilitado.
+1. En el proyecto existente de Supabase, abre **SQL Editor** y vuelve a ejecutar todo el contenido actualizado de [`supabase-schema.sql`](./supabase-schema.sql). También agrega de forma segura la columna `device_type` a una tabla de métricas ya existente, actualiza sus permisos y crea las tablas que falten. Confirma que las tablas `chat_analytics` y `reviews` tengan RLS habilitado.
 2. Crea una cuenta dedicada de administrador en **Authentication → Users** con correo y contraseña. Desactiva el registro público de usuarios y usa una contraseña única, larga y privada.
 3. En [`supabase-config.js`](./supabase-config.js), configura `adminEmail` con el correo fijo de esa cuenta. El informe solo le pedirá la contraseña, pero Supabase Auth seguirá validando internamente correo y contraseña. El correo se incluye en el JavaScript publicado: no es secreto y la contraseña no debe guardarse en el código.
 4. En **SQL Editor**, agrega el usuario a la lista privada de administradores:
@@ -31,11 +31,13 @@ Es un asistente guiado que corre en el navegador, no una IA generativa: no puede
    on conflict do nothing;
    ```
 
-5. En **Project Settings → API**, copia el Project URL y la clave pública `anon`/publishable en [`supabase-config.js`](./supabase-config.js). Esta página pública nunca debe contener una clave `service_role` ni otra clave secreta.
+5. En **Project Settings → API Keys**, copia el Project URL y la clave pública `anon` o `sb_publishable_...` en [`supabase-config.js`](./supabase-config.js). Esta página pública nunca debe contener una clave `service_role`, `sb_secret_...` ni otra clave secreta. La clave pública va en `apikey`; solo las consultas administrativas usan `Authorization: Bearer` con la sesión de Supabase Auth.
 6. Publica el sitio por HTTPS y prueba una visita, el inicio de sesión del informe y el envío de una reseña. El informe se abre con cinco clics al logo, pero la seguridad depende de la autenticación y de las políticas RLS; los cinco clics solo ocultan el acceso.
 7. Comparte con el equipo el enlace publicado terminado en `/reviews.html` para que lo envíen manualmente por WhatsApp al finalizar la atención.
 
 La tabla de métricas permite inserciones anónimas con columnas limitadas; solo usuarios autenticados incluidos en `report_admins` pueden consultar métricas y reseñas. Las reseñas son anónimas y no se muestran públicamente. Como el cliente puede enviar un comentario libre, se le pide explícitamente que no incluya datos personales ni información del pedido.
+
+Si el informe muestra cero visitas o reseñas: vuelve a ejecutar el SQL actualizado, publica de nuevo todos los archivos del sitio (incluido `supabase-config.js`) y prueba la URL publicada, no una copia antigua ni `file://`. El informe distingue errores de carga de métricas y reseñas, y muestra errores de escritura que el navegador haya recibido. Las visitas anteriores a la activación del registro no se pueden reconstruir; los dispositivos se clasifican a partir de las nuevas visitas. Las páginas antiguas que no conocen `device_type` siguen pudiendo enviar y leer sus eventos mientras se actualiza el SQL; esos dispositivos antiguos aparecerán como “No disponible”.
 
 ## Probar localmente
 
